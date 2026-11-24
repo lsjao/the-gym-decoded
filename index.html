@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Gym, Decoded: Interactive TED Presentation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-dark: #111215;
+      --bg-light: #F8F9FA;
+      --surface-light: #FFFFFF;
+      --surface-dark: #1A1C21;
+      --ink-dark: #1E2229;
+      --ink-muted: #5A6270;
+      --ink-light: #F8F9FA;
+      --accent-red: #E62B1E;
+      --accent-red-soft: rgba(230, 43, 30, 0.10);
+      --border-light: #E2E5EB;
+      --border-dark: #2B2F38;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #0B0C0E;
+      color: var(--ink-dark);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    /* Slide transitions & base layout */
+    .stage-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 24px 72px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide {
+      width: 100%;
+      max-width: 1280px;
+      height: 100%;
+      max-height: 740px;
+      border-radius: 16px;
+      padding: 44px 56px;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      overflow-y: auto;
+    }
+
+    .slide.active {
+      display: flex;
+      animation: slideFadeIn 0.36s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes slideFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .slide-light {
+      background-color: var(--bg-light);
+      color: var(--ink-dark);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .slide-dark {
+      background-color: var(--bg-dark);
+      color: var(--ink-light);
+      border: 1px solid var(--border-dark);
+    }
+
+    /* Typography discipline: 1 family, 2 weights (400 & 600/700) */
+    .slide-eyebrow {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent-red);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .slide-title {
+      font-size: clamp(28px, 3vw, 40px);
+      font-weight: 700;
+      line-height: 1.16;
+      letter-spacing: -0.025em;
+      margin-top: 8px;
+      max-width: 960px;
+    }
+
+    .body-copy {
+      font-size: clamp(18px, 1.45vw, 21px);
+      font-weight: 400;
+      line-height: 1.55;
+      color: var(--ink-muted);
+    }
+
+    /* Editorial Journal Snapshot Card */
+    .journal-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-light);
+      border-left: 4px solid var(--accent-red);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      box-shadow: 0 4px 14px rgba(17, 18, 21, 0.04);
+    }
+
+    .journal-badge {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: var(--accent-red-soft);
+      color: var(--accent-red);
+      padding: 3px 7px;
+      border-radius: 4px;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+
+    /* Interactive Muscle Silhouette Styles */
+    .muscle-zone {
+      fill: #D5DBE3;
+      stroke: #FFFFFF;
+      stroke-width: 1.5;
+      cursor: pointer;
+      transition: fill 0.2s ease, transform 0.2s ease;
+    }
+
+    .muscle-zone:hover {
+      fill: #F28B82;
+    }
+
+    .muscle-zone.selected {
+      fill: var(--accent-red);
+    }
+
+    /* Custom Range Slider for RIR Gauge */
+    input[type="range"].ted-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 8px;
+      background: #E2E5EB;
+      border-radius: 999px;
+      outline: none;
+    }
+
+    input[type="range"].ted-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--accent-red);
+      cursor: pointer;
+      border: 3px solid #FFFFFF;
+      box-shadow: 0 2px 8px rgba(230, 43, 30, 0.45);
+      transition: transform 0.15s ease;
+    }
+
+    input[type="range"].ted-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.12);
+    }
+
+    /* Bottom Control Dock */
+    .control-dock {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: rgba(17, 18, 21, 0.94);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid #24272F;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 50;
+      color: #F8F9FA;
+    }
+
+    .nav-btn {
+      background: #22252D;
+      color: #F8F9FA;
+      border: 1px solid #303440;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      background: var(--accent-red);
+      border-color: var(--accent-red);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .dot-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #3A3F4B;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .dot-indicator.active {
+      width: 24px;
+      background: var(--accent-red);
+    }
+
+    /* Responsive adjustments for smaller screens */
+    @media (max-width: 900px) {
+      .stage-wrapper {
+        padding: 10px 10px 64px 10px;
+      }
+      .slide {
+        padding: 24px 20px;
+        max-height: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Main Presentation Stage -->
+  <main class="stage-wrapper" id="stage">
+
+    <!-- =================================================================== -->
+    <!-- SLIDE 1: COVER SLIDE (DARK GROUND)                                  -->
+    <!-- =================================================================== -->
+    <section class="slide slide-dark active" data-slide="1">
+      <!-- Subtle TED geometric stage grid lines -->
+      <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-20" viewBox="0 0 1280 720" fill="none">
+        <line x1="920" y1="0" x2="920" y2="720" stroke="#2E323C" stroke-width="1" />
+        <line x1="1100" y1="0" x2="1100" y2="720" stroke="#2E323C" stroke-width="1" />
+        <line x1="0" y1="540" x2="1280" y2="540" stroke="#2E323C" stroke-width="1" />
+        <circle cx="1100" cy="540" r="180" stroke="#E62B1E" stroke-width="1.5" stroke-dasharray="6 6" />
+        <circle cx="1100" cy="540" r="8" fill="#E62B1E" />
+      </svg>
+
+      <div class="relative z-10 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="inline-block w-3 h-3 rounded-full bg-[#E62B1E]"></span>
+          <span class="text-xs font-bold tracking-[0.2em] uppercase text-gray-400">TED-Style Talk • Exercise Science for Beginners</span>
+        </div>
+        <span class="text-xs font-semibold text-gray-500">11 Slides • ~9 Min</span>
+      </div>
+
+      <div class="relative z-10 my-auto max-w-4xl">
+        <div class="w-16 h-1.5 bg-[#E62B1E] rounded-full mb-8"></div>
+        <h1 class="text-5xl sm:text-7xl font-bold tracking-tight text-white leading-[1.06]">
+          The Gym, <span class="text-[#E62B1E]">Decoded.</span>
+        </h1>
+        <p class="mt-6 text-xl sm:text-2xl font-normal text-gray-300 leading-relaxed max-w-2xl">
+          A science-backed field guide for people who have never touched a barbell. Learn simple rules, clear movements, and practical schedules.
+        </p>
+      </div>
+
+      <div class="relative z-10 flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-gray-800 text-sm text-gray-400">
+        <div class="flex items-center gap-6">
+          <span><strong class="text-white font-semibold">4</strong> Operating Rules</span>
+          <span><strong class="text-white font-semibold">6</strong> Human Movements</span>
+          <span><strong class="text-white font-semibold">Peer-Reviewed</strong> Evidence</span>
+        </div>
+        <button onclick="nextSlide()" class="px-5 py-2.5 rounded-lg bg-[#E62B1E] hover:bg-[#c92216] text-white font-semibold text-sm transition cursor-pointer">
+          Start Talk →
+        </button>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SLIDE 2: CONTENT 1 (THE REAL BARRIER)                               -->
+    <!-- =================================================================== -->
+    <section class="slide slide-light" data-slide="2">
+      <div>
+        <div class="slide-eyebrow"><span>01</span><span>The Real Barrier</span></div>
+        <h2 class="slide-title">Beginners often quit because of information overload.</h2>
+      </div>
+
+      <!-- Visual Contrast: Overwhelm vs 4 Simple Operating Rules -->
+      <div class="grid grid-cols-1 md:grid-cols-11 gap-6 items-center my-auto py-4">
+        <!-- Left Box: The Noise -->
+        <div class="md:col-span-5 bg-white border border-[#E2E5EB] rounded-2xl p-6 shadow-sm">
+          <div class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">What Walking In Feels Like</div>
+          <div class="flex flex-wrap gap-2 mb-5">
+            <span class="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-500 text-sm">200+ Machines</span>
+            <span class="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-500 text-sm">"Drop Sets"</span>
+            <span class="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-500 text-sm">"Muscle Confusion"</span>
+            <span class="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-500 text-sm">Complex Routines</span>
+            <span class="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-500 text-sm">No Map</span>
+          </div>
+          <p class="text-[18px] text-[#5A6270] leading-relaxed">
+            Without a simple mental model, every machine looks like a test you never studied for.
+          </p>
+        </div>
+
+        <!-- Center Filter Arrow SVG -->
+        <div class="md:col-span-1 flex justify-center">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="24" r="22" fill="#E62B1E" fill-opacity="0.1" />
+            <path d="M16 24H32M32 24L26 18M32 24L26 30" stroke="#E62B1E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+
+        <!-- Right Box: The Operating Manual -->
+        <div class="md:col-span-5 bg-[#111215] text-white rounded-2xl p-6 shadow-lg">
+          <div class="text-xs font-bold uppercase tracking-wider text-[#E62B1E] mb-3">Your 4-Rule Operating Manual</div>
+          <ul class="space-y-3 text-[18px]">
+            <li class="flex items-center gap-3">
+              <span class="w-6 h-6 rounded-full bg-[#E62B1E] text-white text-xs font-bold flex items-center justify-center shrink-0">1</span>
+              <span>How muscles actually grow</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <span class="w-6 h-6 rounded-full bg-[#E62B1E] text-white text-xs font-bold flex items-center justify-center shrink-0">2</span>
+              <span>What real effort feels like</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <span class="w-6 h-6 rounded-full bg-[#E62B1E] text-white text-xs font-bold flex items-center justify-center shrink-0">3</span>
+              <span>The 6 human movement patterns</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <span class="w-6 h-6 rounded-full bg-[#E62B1E] text-white text-xs font-bold flex items-center justify-center shrink-0">4</span>
+              <span>How to schedule rest days</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-4 border-t border-[#E2E5EB] text-sm text-[#5A6270]">
+        <span>Key Idea: Clarity removes gym intimidation before you lift a single pound.</span>
+        <span class="font-semibold text-[#1E2229]">02 / 10</span>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SLIDE 3: CONTENT 2 (GROWTH LOOP & MECHANICAL TENSION)               -->
+    <!-- =================================================================== -->
+    <section class="slide slide-light" data-slide="3">
+      <div>
+        <div class="slide-eyebrow"><span>02</span><span>Biology of Adaptation</span></div>
+        <h2 class="slide-title">Muscles grow by responding to mechanical tension.</h2>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 my-auto py-2 items-stretch">
+        <!-- Left: 3-Step Growth Loop SVG -->
+        <div class="lg:col-span-6 bg-white border border-[#E2E5EB] rounded-2xl p-6 flex flex-col justify-between">
+          <div class="text-xs font-bold uppercase tracking-wider text-[#5A6270] mb-2">The 3-Step Adaptation Loop</div>
+          <svg viewBox="0 0 460 150" class="w-full h-auto my-2">
+            <!-- Step 1 -->
+            <rect x="8" y="25" width="126" height="84" rx="12" fill="#FFF5F5" stroke="#E62B1E" stroke-width="2" />
+            <text x="71" y="58" text-anchor="middle" font-size="14" font-weight="700" fill="#1E2229">1. Stimulus</text>
+            <text x="71" y="80" text-anchor="middle" font-size="12" fill="#5A6270">Mechanical tension</text>
+            <text x="71" y="96" text-anchor="middle" font-size="12" fill="#5A6270">in the gym</text>
+
+            <!-- Arrow 1 -->
+            <path d="M138 67H162M162 67L155 60M162 67L155 74" stroke="#E62B1E" stroke-width="2.5" stroke-linecap="round" />
+
+            <!-- Step 2 -->
+            <rect x="167" y="25" width="126" height="84" rx="12" fill="#F8F9FA" stroke="#CBD2DF" stroke-width="1.5" />
+            <text x="230" y="58" text-anchor="middle" font-size="14" font-weight="700" fill="#1E2229">2. Recovery</text>
+            <text x="230" y="80" text-anchor="middle" font-size="12" fill="#5A6270">Sleep &amp; protein</text>
+            <text x="230" y="96" text-anchor="middle" font-size="12" fill="#5A6270">(48 to 72 hrs)</text>
+
+            <!-- Arrow 2 -->
+            <path d="M297 67H321M321 67L314 60M321 67L314 74" stroke="#E62B1E" stroke-width="2.5" stroke-linecap="round" />
+
+            <!-- Step 3 -->
+            <rect x="326" y="25" width="126" height="84" rx="12" fill="#111215" />
+            <text x="389" y="58" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">3. Rebuild</text>
+            <text x="389" y="80" text-anchor="middle" font-size="12" fill="#D1D5DB">Thicker, stronger</text>
+            <text x="389" y="96" text-anchor="middle" font-size="12" fill="#E62B1E">muscle fibers</text>
+          </svg>
+          <p class="text-[17px] text-[#5A6270] leading-snug">
+            <strong class="text-[#1E2229]">Mechanical Tension:</strong> Physical force and strain inside muscle fibers resisting a load triggers tissue repair and growth.
+          </p>
+        </div>
+
+        <!-- Right: Interactive Range of Motion / Lengthened Stretch Toggle -->
+        <div class="lg:col-span-6 bg-white border border-[#E2E5EB] rounded-2xl p-6 flex flex-col justify-between">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-[#E62B1E]">Nerdy Trick: Lengthened Stretch</span>
+            <div class="inline-flex rounded-lg bg-[#F1F3F6] p-1 text-xs font-semibold">
+              <button id="rom-full-btn" onclick="setRomMode('full')" class="px-3 py-1 rounded-md bg-[#E62B1E] text-white transition cursor-pointer">Full / Stretched</button>
+              <button id="rom-short-btn" onclick="setRomMode('short')" class="px-3 py-1 rounded-md text-[#5A6270] hover:text-[#1E2229] transition cursor-pointer">Partial Top-Half</button>
+            </div>
+          </div>
+
+          <svg id="rom-svg" viewBox="0 0 420 120" class="w-full h-auto">
+            <!-- Baseline track -->
+            <line x1="30" y1="92" x2="390" y2="92" stroke="#E2E5EB" stroke-width="4" stroke-linecap="round" />
+            <!-- Active stretch highlight zone -->
+            <rect id="rom-zone" x="30" y="84" width="360" height="16" rx="8" fill="#E62B1E" fill-opacity="0.18" />
+            <!-- Curve -->
+            <path id="rom-curve" d="M 30 92 Q 210 10 390 92" fill="none" stroke="#E62B1E" stroke-width="4" stroke-linecap="round" />
+            <text id="rom-label" x="210" y="34" text-anchor="middle" font-size="13" font-weight="700" fill="#1E2229">
+              Peak Growth Signal: Loaded in the Stretched Position
+            </text>
+            <text x="55" y="114" font-size="11" font-weight="600" fill="#E62B1E">Deep Stretch</text>
+            <text x="365" y="114" text-anchor="end" font-size="11" font-weight="600" fill="#5A6270">Top Lockout</text>
+          </svg>
+
+          <p id="rom-caption" class="text-[17px] text-[#5A6270] leading-snug mt-2">
+            Control the lowering phase into a comfortable stretch. Muscles respond strongly when loaded at longer lengths.
+          </p>
+        </div>
+      </div>
+
+      <!-- Academic Journal Citation Snapshot -->
+      <div class="journal-card">
+        <span class="journal-badge">Peer-Reviewed</span>
+        <div class="text-xs sm:text-sm text-[#5A6270] leading-snug">
+          <strong class="text-[#1E2229]">Schoenfeld, B. J. (2010)</strong>: <em>The mechanisms of muscle hypertrophy and their application to resistance training</em>, J. Strength Cond. Res. •
+          <strong class="text-[#1E2229]">Wolf et al. &amp; Kassiano et al. (2023)</strong>: Systematic reviews showing strong hypertrophy when loading muscles at longer (stretched) lengths.
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SLIDE 4: CONTENT 3 (HEAVY VS. LIGHT: PROS, CONS & RIR EFFORT)       -->
+    <!-- =================================================================== -->
+    <section class="slide slide-light" data-slide="4">
+      <div>
+        <div class="slide-eyebrow"><span>03</span><span>Load, Sets &amp; Trade-Offs</span></div>
+        <h2 class="slide-title">Heavy sets vs. lighter sets: choosing your trade-offs.</h2>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 my-auto py-1 items-stretch">
+        <!-- Card 1: 1–2 Hard Heavy Sets (Pros & Cons) -->
+        <div class="lg:col-span-4 bg-white border border-[#E2E5EB] rounded-2xl p-5 flex flex-col justify-between shadow-sm">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-[#E62B1E] text-white">Strength + Size</span>
+              <span class="text-xs font-bold text-[#5A6270]">~5 to 10 Reps</span>
+            </div>
+            <h3 class="text-[20px] font-bold text-[#1E2229]">1–2 Hard Sets (Heavier Weight)</h3>
+            <p class="text-[15px] text-[#5A6270] mt-1">Builds maximal strength and muscle size efficiently.</p>
+
+            <div class="mt-4 space-y-2.5 text-[15px]">
+              <div class="bg-[#F8F9FA] rounded-xl p-3 border border-[#E2E5EB]">
+                <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 block mb-0.5">Pros</span>
+                <p class="text-[#1E2229] leading-snug">Recruits high-threshold fibers from rep 1 and keeps workouts brief.</p>
+              </div>
+              <div class="bg-[#FFF5F5] rounded-xl p-3 border border-[#FAD2CF]">
+                <span class="text-xs font-bold uppercase tracking-wider text-[#E62B1E] block mb-0.5">Cons</span>
+                <p class="text-[#1E2229] leading-snug">Higher central nervous system (CNS) fatigue and joint stress, requiring longer recovery.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: 3–5 Lighter Sets (Pros & Cons) -->
+        <div class="lg:col-span-4 bg-white border border-[#E2E5EB] rounded-2xl p-5 flex flex-col justify-between shadow-sm">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-[#1E2229] text-white">Endurance + Stamina</span>
+              <span class="text-xs font-bold text-[#5A6270]">~15 to 30+ Reps</span>
+            </div>
+            <h3 class="text-[20px] font-bold text-[#1E2229]">3–5 Lighter Sets (Lighter Weight)</h3>
+            <p class="text-[15px] text-[#5A6270] mt-1">Builds local muscular endurance and stamina.</p>
+
+            <div class="mt-4 space-y-2.5 text-[15px]">
+              <div class="bg-[#F8F9FA] rounded-xl p-3 border border-[#E2E5EB]">
+                <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 block mb-0.5">Pros</span>
+                <p class="text-[#1E2229] leading-snug">Gentler on joints and CNS while building muscular work capacity.</p>
+              </div>
+              <div class="bg-[#FFF5F5] rounded-xl p-3 border border-[#FAD2CF]">
+                <span class="text-xs font-bold uppercase tracking-wider text-[#E62B1E] block mb-0.5">Cons</span>
+                <p class="text-[#1E2229] leading-snug">Takes longer; only builds comparable size if pushed right up to muscular failure.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Interactive Reps in Reserve (RIR) Slider -->
+        <div class="lg:col-span-4 bg-[#111215] text-white rounded-2xl p-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-[#E62B1E]">Effort Gauge</span>
+              <span id="rir-badge" class="text-xs font-bold px-2.5 py-1 rounded bg-[#E62B1E] text-white">1 RIR • Sweet Spot</span>
+            </div>
+            <h3 class="text-[20px] font-bold text-white">Reps in Reserve (RIR)</h3>
+            <p class="text-xs text-gray-400 mt-1">Slide to see how proximity to failure changes your training stimulus:</p>
+          </div>
+
+          <div class="my-3 bg-[#1A1C21] border border-[#2B2F38] rounded-xl p-4">
+            <div class="flex justify-between text-[11px] font-semibold text-gray-400 mb-2">
+              <span>0 RIR (Failure)</span>
+              <span>1 to 2 RIR</span>
+              <span>5+ RIR (Easy)</span>
+            </div>
+            <input id="rir-slider" type="range" min="0" max="5" value="1" class="ted-slider" oninput="updateRirGauge(this.value)" />
+            <div class="mt-3">
+              <div id="rir-value-text" class="text-lg font-bold text-white">1 Rep Left in Tank</div>
+              <div id="rir-stimulus-pct" class="text-xs font-bold text-[#E62B1E] mt-0.5">~95% Growth Stimulus</div>
+            </div>
+            <p id="rir-desc" class="text-xs text-gray-300 mt-2 leading-relaxed">
+              The final 1 to 2 reps slow down noticeably despite full effort, giving high muscle stimulus with manageable fatigue.
+            </p>
+          </div>
+
+          <div class="text-xs text-gray-400">
+            Target zone: Stop with <strong class="text-white">0 to 2 clean reps</strong> left in reserve.
+          </div>
+        </div>
+      </div>
+
+      <!-- Journal Citation Snapshot -->
+      <div class="journal-card">
+        <span class="journal-badge">Peer-Reviewed</span>
+        <div class="text-xs sm:text-sm text-[#5A6270] leading-snug">
+          <strong class="text-[#1E2229]">Schoenfeld, B. J., et al. (2021)</strong>: <em>Loading Recommendations for Muscle Strength, Hypertrophy, and Local Endurance: A Re-Examination of the Repetition Continuum</em>, Sports •
+          <strong class="text-[#1E2229]">Morton, R. W., et al. (2016)</strong>: J. Applied Physiology (high and low loads yield similar hypertrophy when sets reach near-failure).
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SLIDE 5: CONTENT 4 (THE 6 HUMAN MOVEMENT PATTERNS)                  -->
+    <!-- =================================================================== -->
+    <section class="slide slide-light" data-slide="5">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <div class="slide-eyebrow"><span>04</span><span>Exercise Selection</span></div>
+          <h2 class="slide-title">Six basic movement patterns cover your entire body.</h2>
+        </div>
+        <!-- Nerdy Tip Pill -->
+        <div class="bg-[#111215] text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#E62B1E]"></span>
+          <span>Pro Tip: Start on machines &amp; cables for built-in stability</span>
+        </div>
+      </div>
+
+      <!-- 6-Card Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 my-auto py-3">
+        <!-- 1. Push -->
+        <div class="bg-white border border-[#E2E5EB] rounded-2xl p-5 flex items-start gap-4 hover:border-[#E62B1E] transition">
+          <div class="w-12 h-12 rounded-xl bg-[#FFF5F5] text-[#E62B1E] flex items-center justify-center shrink-0">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-[20px] font-bold text-[#1E2229]">1. Push</h3>
+            <p class="text-[16px] text-[#5A6270] mt-0.5">Pushing a heavy door open. Trains chest, front shoulders, and triceps.</p>
+          </div>
+        </div>
+
+        <!-- 2. Pull -->
+        <div class="bg-white border border-[#E2E5EB] rounded-2xl p-5 flex items-start gap-4 hover:border-[#E62B1E] transition">
+          <div class="w-12 h-12 rounded-xl bg-[#FFF5F5] text-[#E62B1E] flex items-center justify-center shrink-0">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M11 6l-6 6 6 6" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-[20px] font-bold text-[#1E2229]">2. Pull</h3>
+            <p class="text-[16px] text-[#5A6270] mt-0.5">Pulling a suitcase toward you. Trains upper back, lats, and biceps.</p>
+          </div>
+        </div>
+
+        <!-- 3. Squat -->
+        <div class="bg-white border border-[#E2E5EB] rounded-2xl p-5 flex items-start gap-4 hover:border-[#E62B1E] transition">
+          <div class="w-12 h-12 rounded-xl bg-[#FFF5F5] text-[#E62B1E] flex items-center justify-center shrink-0">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 4v16M7 15l5 5 5-5M7 9l5-5 5 5" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-[20px] font-bold text-[#1E2229]">3. Squat</h3>
+            <p class="text-[16px] text-[#5A6270] mt-0.5">Sitting down and standing back up. Trains quads and glutes.</p>
+          </div>
+        </div>
+
+        <!-- 4. Hinge -->
+        <div class="bg-white border border-[#E2E5EB] rounded-2xl p-5 flex items-start gap-4 hover:border-[#E62B1E] transition">
+          <div class="w-12 h-12 rounded-xl bg-[#FFF5F5] text-[#E62B1E] flex items-center justify-center shrink-0">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 18L14 10L18 14" />
+              <circle cx="14" cy="10" r="2.5" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-[20px] font-bold text-[#1E2229]">4. Hinge</h3>
+            <p class="text-[16px] text-[#5A6270] mt-0.5">Picking a box off the floor safely. Trains hamstrings and glutes.</p>
+          </div>
+        </div>
+
+        <!-- 5. Lunge -->
+        <div class="bg-white border border-[#E2E5EB] rounded-2xl p-5 flex items-start gap-4 hover:border-[#E62B1E] transition">
+          <div class="w-12 h-12 rounded-xl bg-[#FFF5F5] text-[#E62B1E] flex items-center justify-center shrink-0">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 19h5v-5h5V9h4" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-[20px] font-bold text-[#1E2229]">5. Lunge</h3>
+            <p class="text-[16px] text-[#5A6270] mt-0.5">Climbing stairs one leg at a time. Trains balance and leg symmetry.</p>
+          </div>
+        </div>
+
+        <!-- 6. Carry / Brace -->
+        <div class="bg-white border border-[#E2E5EB] rounded-2xl p-5 flex items-start gap-4 hover:border-[#E62B1E] transition">
+          <div class="w-12 h-12 rounded-xl bg-[#FFF5F5] text-[#E62B1E] flex items-center justify-center shrink-0">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="6" y="7" width="12" height="12" rx="2" />
+              <path d="M9 7V5a3 3 0 0 1 6 0v2" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-[20px] font-bold text-[#1E2229]">6. Carry / Brace</h3>
+            <p class="text-[16px] text-[#5A6270] mt-0.5">Carrying heavy groceries. Trains deep core and spine stability.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-[#E2E5EB] text-sm text-[#5A6270]">
+        <span>Pick 1 exercise per pattern for a balanced, full-body session.</span>
+        <span class="font-semibold text-[#1E2229]">05 / 10</span>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SLIDE 6: CONTENT 5 (INTERACTIVE ANATOMICAL MUSCLE MODEL)            -->
+    <!-- =================================================================== -->
+    <section class="slide slide-light" data-slide="6">
+      <div>
+        <div class="slide-eyebrow"><span>05</span><span>Interactive Anatomy Map</span></div>
+        <h2 class="slide-title">Meet your engine: tap any muscle group to see its job.</h2>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 my-auto py-2 items-center">
+        <!-- Interactive Anterior & Posterior Body SVG -->
+        <div class="lg:col-span-7 bg-white border border-[#E2E5EB] rounded-2xl p-5 flex flex-col items-center">
+          <div class="w-full flex justify-around text-xs font-bold uppercase tracking-wider text-[#5A6270] mb-2">
+            <span>Front (Anterior)</span>
+            <span>Back (Posterior)</span>
+          </div>
+
+          <svg viewBox="0 0 520 330" class="w-full max-w-[500px] h-auto">
+            <!-- ==================== ANTERIOR (FRONT) VIEW ==================== -->
+            <g transform="translate(45, 10)">
+              <!-- Head & Neck -->
+              <circle cx="85" cy="24" r="18" fill="#E2E5EB" />
+              <rect x="77" y="42" width="16" height="12" rx="4" fill="#E2E5EB" />
+
+              <!-- Shoulders (Delts) -->
+              <path class="muscle-zone" data-muscle="shoulders" onclick="selectMuscle('shoulders')" d="M46 58 Q34 62 34 82 L48 86 L54 62 Z" />
+              <path class="muscle-zone" data-muscle="shoulders" onclick="selectMuscle('shoulders')" d="M124 58 Q136 62 136 82 L122 86 L116 62 Z" />
+
+              <!-- Chest (Pectorals) -->
+              <path class="muscle-zone selected" data-muscle="chest" onclick="selectMuscle('chest')" d="M55 60 L83 60 L83 96 L52 92 Z" />
+              <path class="muscle-zone selected" data-muscle="chest" onclick="selectMuscle('chest')" d="M87 60 L115 60 L118 92 L87 96 Z" />
+
+              <!-- Arms (Biceps / Forearms) -->
+              <rect class="muscle-zone" data-muscle="arms" onclick="selectMuscle('arms')" x="30" y="86" width="16" height="44" rx="7" />
+              <rect class="muscle-zone" data-muscle="arms" onclick="selectMuscle('arms')" x="124" y="86" width="16" height="44" rx="7" />
+              <rect x="27" y="133" width="14" height="40" rx="6" fill="#E2E5EB" />
+              <rect x="129" y="133" width="14" height="40" rx="6" fill="#E2E5EB" />
+
+              <!-- Core (Abs / Obliques) -->
+              <rect class="muscle-zone" data-muscle="core" onclick="selectMuscle('core')" x="58" y="99" width="54" height="62" rx="8" />
+
+              <!-- Quads (Front Thighs) -->
+              <path class="muscle-zone" data-muscle="quads" onclick="selectMuscle('quads')" d="M55 166 L82 166 L79 242 L56 242 Z" />
+              <path class="muscle-zone" data-muscle="quads" onclick="selectMuscle('quads')" d="M88 166 L115 166 L114 242 L91 242 Z" />
+
+              <!-- Lower Legs -->
+              <rect x="58" y="246" width="18" height="56" rx="7" fill="#E2E5EB" />
+              <rect x="94" y="246" width="18" height="56" rx="7" fill="#E2E5EB" />
+            </g>
+
+            <!-- Divider Line -->
+            <line x1="260" y1="20" x2="260" y2="310" stroke="#E2E5EB" stroke-width="1.5" stroke-dasharray="4 4" />
+
+            <!-- ==================== POSTERIOR (BACK) VIEW ==================== -->
+            <g transform="translate(305, 10)">
+              <!-- Head & Neck -->
+              <circle cx="85" cy="24" r="18" fill="#E2E5EB" />
+              <rect x="77" y="42" width="16" height="12" rx="4" fill="#E2E5EB" />
+
+              <!-- Rear Shoulders -->
+              <path class="muscle-zone" data-muscle="shoulders" onclick="selectMuscle('shoulders')" d="M46 58 Q34 62 34 82 L48 86 L54 62 Z" />
+              <path class="muscle-zone" data-muscle="shoulders" onclick="selectMuscle('shoulders')" d="M124 58 Q136 62 136 82 L122 86 L116 62 Z" />
+
+              <!-- Upper Back & Lats -->
+              <path class="muscle-zone" data-muscle="back" onclick="selectMuscle('back')" d="M54 58 L116 58 L110 132 L60 132 Z" />
+
+              <!-- Triceps (Back of Arms) -->
+              <rect class="muscle-zone" data-muscle="arms" onclick="selectMuscle('arms')" x="30" y="86" width="16" height="44" rx="7" />
+              <rect class="muscle-zone" data-muscle="arms" onclick="selectMuscle('arms')" x="124" y="86" width="16" height="44" rx="7" />
+              <rect x="27" y="133" width="14" height="40" rx="6" fill="#E2E5EB" />
+              <rect x="129" y="133" width="14" height="40" rx="6" fill="#E2E5EB" />
+
+              <!-- Glutes -->
+              <path class="muscle-zone" data-muscle="glutes" onclick="selectMuscle('glutes')" d="M55 136 L84 136 L84 176 L53 172 Z" />
+              <path class="muscle-zone" data-muscle="glutes" onclick="selectMuscle('glutes')" d="M86 136 L115 136 L117 172 L86 176 Z" />
+
+              <!-- Hamstrings (Back Thighs) -->
+              <path class="muscle-zone" data-muscle="hamstrings" onclick="selectMuscle('hamstrings')" d="M55 180 L82 180 L79 242 L56 242 Z" />
+              <path class="muscle-zone" data-muscle="hamstrings" onclick="selectMuscle('hamstrings')" d="M88 180 L115 180 L114 242 L91 242 Z" />
+
+              <!-- Calves -->
+              <rect class="muscle-zone" data-muscle="calves" onclick="selectMuscle('calves')" x="57" y="246" width="20" height="54" rx="8" />
+              <rect class="muscle-zone" data-muscle="calves" onclick="selectMuscle('calves')" x="93" y="246" width="20" height="54" rx="8" />
+            </g>
+          </svg>
+
+          <!-- Quick Muscle Selector Pills -->
+          <div class="flex flex-wrap justify-center gap-1.5 mt-2">
+            <button onclick="selectMuscle('chest')" class="muscle-pill px-2.5 py-1 rounded-md text-xs font-semibold bg-[#E62B1E] text-white cursor-pointer" data-pill="chest">Chest</button>
+            <button onclick="selectMuscle('back')" class="muscle-pill px-2.5 py-1 rounded-md text-xs font-semibold bg-[#F1F3F6] text-[#5A6270] cursor-pointer" data-pill="back">Back &amp; Lats</button>
+            <button onclick="selectMuscle('shoulders')" class="muscle-pill px-2.5 py-1 rounded-md text-xs font-semibold bg-[#F1F3F6] text-[#5A6270] cursor-pointer" data-pill="shoulders">Shoulders</button>
+            <button onclick="selectMuscle('arms')" class="muscle-pill px-2.5 py-1 rounded-md text-xs font-semibold bg-[#F1F3F6] text-[#5A6270] cursor-pointer" data-pill="arms">Arms</button>
+            <button onclick="selectMuscle('core')" class="muscle-pill px-2.5 py-1 rounded-md text-xs font-semibold bg-[#F1F3F6] text-[#5A6270] cursor-pointer" data-pill="core">Core</button>
+            <button onclick="selectMuscle('quads')" class="muscle-pill px-2.5 py-1 rounded-md text-xs font-semibold bg-[#F1F3F6] text-[#5A6270] cursor-pointer" data-pill="quads">Quads</button>
+            <button onclick="selectMuscle('glutes')" class="muscle-pill px-2.5 py-1 rounded-md text-xs font-semibold bg-[#F1F3F6] text-[#5A6270] cursor-pointer" data-pill="glutes">Glutes</button>
+            <button onclick="selectMuscle('hamstrings')" class="muscle-pill px-2.5 py-1 rounded-md text-xs font-semibold bg-[#F1F3F6] text-[#5A6270] cursor-pointer" data-pill="hamstrings">Hamstrings</button>
+            <button onclick="selectMuscle('calves')" class="muscle-pill px-2.5 py-1 rounded-md text-xs font-semibold bg-[#F1F3F6] text-[#5A6270] cursor-pointer" data-pill="calves">Calves</button>
+          </div>
+        </div>
+
+        <!-- Right: Selected Muscle Detail Card -->
+        <div class="lg:col-span-5 bg-[#111215] text-white rounded-2xl p-7 flex flex-col justify-between h-full">
+          <div>
+            <span id="muscle-region-tag" class="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded bg-[#E62B1E] text-white">
+              Upper Body • Anterior
+            </span>
+            <h3 id="muscle-title" class="text-3xl font-bold text-white mt-4">Chest (Pectorals)</h3>
+            <p id="muscle-job" class="text-[19px] text-gray-300 mt-3 leading-relaxed">
+              Powers horizontal pushing movements, such as pushing open a heavy door or pushing yourself up off the floor.
+            </p>
+          </div>
+
+          <div class="mt-6 pt-5 border-t border-gray-800 space-y-3">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-400">Movement Pattern:</span>
+              <span id="muscle-pattern" class="font-bold text-white">Horizontal Push</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-400">Beginner-Friendly Move:</span>
+              <span id="muscle-exercise" class="font-bold text-[#E62B1E]">Seated Chest Press Machine</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-[#E2E5EB] text-sm text-[#5A6270]">
+        <span>Compound moves train multiple muscles at once, saving you from isolating every muscle individually.</span>
+        <span class="font-semibold text-[#1E2229]">06 / 11</span>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SLIDE 7: CONTENT 6 (WHAT IS A WORKOUT SPLIT?)                       -->
+    <!-- =================================================================== -->
+    <section class="slide slide-light" data-slide="7">
+      <div>
+        <div class="slide-eyebrow"><span>06</span><span>Weekly Structure</span></div>
+        <h2 class="slide-title">A workout split is a weekly recovery calendar.</h2>
+      </div>
+
+      <!-- 7-Day Recovery Timeline Visual -->
+      <div class="bg-white border border-[#E2E5EB] rounded-2xl p-6 my-auto">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-[#5A6270]">Sample 7-Day Stimulus &amp; 48 to 72h Tissue Repair Window</span>
+          <span class="text-xs font-bold text-[#E62B1E] bg-[#FFF5F5] px-3 py-1 rounded-full">Total Weekly Hard Sets Drive Results</span>
+        </div>
+
+        <svg viewBox="0 0 840 160" class="w-full h-auto">
+          <!-- Day Columns -->
+          <!-- Mon -->
+          <rect x="10" y="16" width="106" height="96" rx="12" fill="#E62B1E" />
+          <text x="63" y="46" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">MON</text>
+          <text x="63" y="72" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">Session A</text>
+          <text x="63" y="92" text-anchor="middle" font-size="11" fill="#FFE4E2">Stimulus</text>
+
+          <!-- Tue -->
+          <rect x="128" y="16" width="106" height="96" rx="12" fill="#F8F9FA" stroke="#CBD2DF" stroke-width="1.5" />
+          <text x="181" y="46" text-anchor="middle" font-size="13" font-weight="700" fill="#5A6270">TUE</text>
+          <text x="181" y="72" text-anchor="middle" font-size="13" font-weight="600" fill="#1E2229">Rest / Walk</text>
+          <text x="181" y="92" text-anchor="middle" font-size="11" fill="#E62B1E">Repair Window</text>
+
+          <!-- Wed -->
+          <rect x="246" y="16" width="106" height="96" rx="12" fill="#E62B1E" />
+          <text x="299" y="46" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">WED</text>
+          <text x="299" y="72" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">Session B</text>
+          <text x="299" y="92" text-anchor="middle" font-size="11" fill="#FFE4E2">Stimulus</text>
+
+          <!-- Thu -->
+          <rect x="364" y="16" width="106" height="96" rx="12" fill="#F8F9FA" stroke="#CBD2DF" stroke-width="1.5" />
+          <text x="417" y="46" text-anchor="middle" font-size="13" font-weight="700" fill="#5A6270">THU</text>
+          <text x="417" y="72" text-anchor="middle" font-size="13" font-weight="600" fill="#1E2229">Rest / Walk</text>
+          <text x="417" y="92" text-anchor="middle" font-size="11" fill="#E62B1E">Repair Window</text>
+
+          <!-- Fri -->
+          <rect x="482" y="16" width="106" height="96" rx="12" fill="#E62B1E" />
+          <text x="535" y="46" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">FRI</text>
+          <text x="535" y="72" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">Session A</text>
+          <text x="535" y="92" text-anchor="middle" font-size="11" fill="#FFE4E2">Stimulus</text>
+
+          <!-- Sat -->
+          <rect x="600" y="16" width="106" height="96" rx="12" fill="#F8F9FA" stroke="#CBD2DF" stroke-width="1.5" />
+          <text x="653" y="46" text-anchor="middle" font-size="13" font-weight="700" fill="#5A6270">SAT</text>
+          <text x="653" y="72" text-anchor="middle" font-size="13" font-weight="600" fill="#1E2229">Rest / Life</text>
+          <text x="653" y="92" text-anchor="middle" font-size="11" fill="#5A6270">Recovery</text>
+
+          <!-- Sun -->
+          <rect x="718" y="16" width="112" height="96" rx="12" fill="#F8F9FA" stroke="#CBD2DF" stroke-width="1.5" />
+          <text x="774" y="46" text-anchor="middle" font-size="13" font-weight="700" fill="#5A6270">SUN</text>
+          <text x="774" y="72" text-anchor="middle" font-size="13" font-weight="600" fill="#1E2229">Rest / Life</text>
+          <text x="774" y="92" text-anchor="middle" font-size="11" fill="#5A6270">Recovery</text>
+
+          <!-- Recovery Bracket -->
+          <path d="M128 126 L128 136 L234 136 L234 126" fill="none" stroke="#E62B1E" stroke-width="2" />
+          <text x="181" y="152" text-anchor="middle" font-size="11" font-weight="700" fill="#1E2229">48 Hours Between Sessions</text>
+        </svg>
+
+        <p class="text-[19px] text-[#5A6270] mt-2 leading-relaxed">
+          A split organizes <strong class="text-[#1E2229]">which muscles work on which days</strong> so trained tissue gets 48 to 72 hours to repair and grow stronger.
+        </p>
+      </div>
+
+      <!-- Journal Citation Snapshot -->
+      <div class="journal-card">
+        <span class="journal-badge">Peer-Reviewed</span>
+        <div class="text-xs sm:text-sm text-[#5A6270] leading-snug">
+          <strong class="text-[#1E2229]">Schoenfeld, B. J., Grgic, J., &amp; Krieger, J. (2019)</strong>: <em>How many times per week should a muscle be trained to maximize muscle hypertrophy? A systematic review and meta-analysis</em>, Journal of Sports Sciences (equated weekly volume produces similar growth across split frequencies).
+        </div>
+      </div>
+      <div class="flex items-center justify-end text-xs font-semibold text-[#1E2229] -mt-2">07 / 11</div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SLIDE 8: CONTENT 7 (WORKOUT SPLITS PROGRESSION)                     -->
+    <!-- =================================================================== -->
+    <section class="slide slide-light" data-slide="8">
+      <div>
+        <div class="slide-eyebrow"><span>07</span><span>Workout Splits Progression</span></div>
+        <h2 class="slide-title">Three proven splits: from beginner structure to peak efficiency.</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 my-auto py-2 items-stretch">
+        <!-- Split 1: PPL + Rest + Upper/Lower (Best Beginner Starting Point) -->
+        <div class="bg-[#111215] text-white rounded-2xl p-5 flex flex-col justify-between shadow-xl border-2 border-[#E62B1E]">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-2.5">
+              <span class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-[#E62B1E] text-white">Best for Beginners</span>
+              <span class="text-xs font-bold text-gray-300">5 Days / Week</span>
+            </div>
+            <h3 class="text-[20px] font-bold text-white leading-snug">PPL + Rest + Upper/Lower</h3>
+            <p class="text-[15px] text-gray-300 mt-2 leading-relaxed">
+              Hits every muscle twice weekly with varied movement focus and manageable per-session fatigue.
+            </p>
+          </div>
+
+          <div class="mt-4 pt-3.5 border-t border-gray-800">
+            <div class="text-[11px] text-gray-400 mb-2">7-Day Rotation (Push / Pull / Legs / Rest / Upper / Lower / Rest)</div>
+            <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold">
+              <div class="py-1.5 rounded bg-[#E62B1E] text-white">Push</div>
+              <div class="py-1.5 rounded bg-[#E62B1E] text-white">Pull</div>
+              <div class="py-1.5 rounded bg-[#E62B1E] text-white">Legs</div>
+              <div class="py-1.5 rounded bg-gray-800 text-gray-400">Rest</div>
+              <div class="py-1.5 rounded bg-white text-[#111215]">Up</div>
+              <div class="py-1.5 rounded bg-white text-[#111215]">Low</div>
+              <div class="py-1.5 rounded bg-gray-800 text-gray-400">Rest</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Split 2: Upper / Lower (Scaling Up Volume) -->
+        <div class="bg-white border border-[#E2E5EB] rounded-2xl p-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-2.5">
+              <span class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-[#F1F3F6] text-[#5A6270]">Scale Up Volume</span>
+              <span class="text-xs font-bold text-[#1E2229]">4 or 6 Days / Week</span>
+            </div>
+            <h3 class="text-[20px] font-bold text-[#1E2229] leading-snug">Upper / Lower</h3>
+            <p class="text-[15px] text-[#5A6270] mt-2 leading-relaxed">
+              Alternates upper-body and lower-body workouts: run 4 days for balanced recovery, or 6 days for higher weekly volume.
+            </p>
+          </div>
+
+          <div class="mt-4 pt-3.5 border-t border-[#E2E5EB]">
+            <div class="text-[11px] text-[#5A6270] mb-2">4-Day Base (or 6-Day High-Volume Rotation)</div>
+            <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold">
+              <div class="py-1.5 rounded bg-[#1E2229] text-white">Up</div>
+              <div class="py-1.5 rounded bg-[#E62B1E] text-white">Low</div>
+              <div class="py-1.5 rounded bg-[#F1F3F6] text-gray-400">Rest</div>
+              <div class="py-1.5 rounded bg-[#1E2229] text-white">Up</div>
+              <div class="py-1.5 rounded bg-[#E62B1E] text-white">Low</div>
+              <div class="py-1.5 rounded bg-[#F1F3F6] text-gray-400">Rest</div>
+              <div class="py-1.5 rounded bg-[#F1F3F6] text-gray-400">Rest</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Split 3: Full Body Every Other Day (FBEOD) -->
+        <div class="bg-white border border-[#E2E5EB] rounded-2xl p-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-2.5">
+              <span class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-[#FFF5F5] text-[#E62B1E]">Latest Science</span>
+              <span class="text-xs font-bold text-[#1E2229]">~3.5 Days / Week</span>
+            </div>
+            <h3 class="text-[20px] font-bold text-[#1E2229] leading-snug">Full Body Every Other Day (FBEOD)</h3>
+            <p class="text-[15px] text-[#5A6270] mt-2 leading-relaxed">
+              Trains every muscle every 48 hours with as little as <strong class="text-[#1E2229]">1 hard working set per muscle group</strong> per session for maximum per-set efficiency.
+            </p>
+          </div>
+
+          <div class="mt-4 pt-3.5 border-t border-[#E2E5EB]">
+            <div class="text-[11px] text-[#5A6270] mb-2">Every 48 Hours (1 Hard Set / Muscle Group)</div>
+            <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold">
+              <div class="py-1.5 rounded bg-[#E62B1E] text-white">FB</div>
+              <div class="py-1.5 rounded bg-[#F1F3F6] text-gray-400">Rest</div>
+              <div class="py-1.5 rounded bg-[#E62B1E] text-white">FB</div>
+              <div class="py-1.5 rounded bg-[#F1F3F6] text-gray-400">Rest</div>
+              <div class="py-1.5 rounded bg-[#E62B1E] text-white">FB</div>
+              <div class="py-1.5 rounded bg-[#F1F3F6] text-gray-400">Rest</div>
+              <div class="py-1.5 rounded bg-[#E62B1E] text-white">FB</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Journal Citation Snapshot for FBEOD & Minimal-Dose High-Frequency -->
+      <div class="journal-card">
+        <span class="journal-badge">Peer-Reviewed</span>
+        <div class="text-xs sm:text-sm text-[#5A6270] leading-snug">
+          <strong class="text-[#1E2229]">Iversen, V. M., et al. (2021)</strong>: <em>No Time to Lift? Designing Time-Efficient Training Programs for Strength and Hypertrophy</em>, Sports Medicine (1 hard set per exercise performed 2–3+ times weekly produces substantial gains) •
+          <strong class="text-[#1E2229]">Pelland, J. C., et al. (2024/2025)</strong>: Meta-regression on resistance training dose-response &amp; frequency (diminishing returns per extra set within a single session favor spreading low-volume sets across frequent sessions).
+        </div>
+      </div>
+      <div class="flex items-center justify-end text-xs font-semibold text-[#1E2229] -mt-2">08 / 11</div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SLIDE 9: CONTENT 8 (4 NERDY RULES THAT SAVE MONTHS OF GUESSWORK)    -->
+    <!-- =================================================================== -->
+    <section class="slide slide-light" data-slide="9">
+      <div>
+        <div class="slide-eyebrow"><span>08</span><span>Evidence-Based Habits</span></div>
+        <h2 class="slide-title">Four nerdy rules that save beginners months of guesswork.</h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 my-auto py-1" style="gap: clamp(10px, 1.5vh, 16px);">
+        <!-- Rule 1: Double Progression -->
+        <div class="bg-white border border-[#E2E5EB] rounded-2xl flex flex-col justify-between" style="padding: clamp(12px, 1.8vh, 18px) clamp(14px, 1.6vw, 20px);">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="text-xs font-bold uppercase tracking-wider text-[#E62B1E] mb-1">Rule 01 • Double Progression</div>
+              <h3 class="text-[18px] font-bold text-[#1E2229] leading-snug">Earn reps before adding weight</h3>
+            </div>
+            <!-- Mini Staircase SVG -->
+            <svg width="64" height="40" viewBox="0 0 72 52" class="shrink-0">
+              <path d="M6 46 H24 V32 H44 V18 H66" fill="none" stroke="#E62B1E" stroke-width="3" stroke-linecap="round" />
+              <text x="14" y="40" font-size="9" font-weight="700" fill="#1E2229">8</text>
+              <text x="34" y="26" font-size="9" font-weight="700" fill="#1E2229">10</text>
+              <text x="54" y="13" font-size="9" font-weight="700" fill="#E62B1E">12+</text>
+            </svg>
+          </div>
+          <p class="text-[15px] text-[#5A6270] mt-2 leading-snug">Keep the same weight until you hit 12 clean reps, then add 5 lbs and reset to 8 reps.</p>
+        </div>
+
+        <!-- Rule 2: Compounds First, Isolations Second -->
+        <div class="bg-white border border-[#E2E5EB] rounded-2xl flex flex-col justify-between" style="padding: clamp(12px, 1.8vh, 18px) clamp(14px, 1.6vw, 20px);">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="text-xs font-bold uppercase tracking-wider text-[#E62B1E] mb-1">Rule 02 • Exercise Order</div>
+              <h3 class="text-[18px] font-bold text-[#1E2229] leading-snug">Compounds first, isolations second</h3>
+            </div>
+            <!-- Mini Order Flow SVG: Multi-Joint -> Single-Joint -->
+            <svg width="72" height="40" viewBox="0 0 78 52" class="shrink-0">
+              <rect x="4" y="8" width="28" height="36" rx="5" fill="#E62B1E" />
+              <text x="18" y="24" text-anchor="middle" font-size="8" font-weight="700" fill="#FFFFFF">1st</text>
+              <text x="18" y="35" text-anchor="middle" font-size="7" font-weight="600" fill="#FFE4E2">Multi</text>
+              <path d="M35 26 H43 M43 26 L40 23 M43 26 L40 29" stroke="#1E2229" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              <rect x="46" y="14" width="28" height="24" rx="5" fill="#1E2229" />
+              <text x="60" y="25" text-anchor="middle" font-size="8" font-weight="700" fill="#FFFFFF">2nd</text>
+              <text x="60" y="34" text-anchor="middle" font-size="7" font-weight="600" fill="#CBD2DF">Single</text>
+            </svg>
+          </div>
+          <p class="text-[15px] text-[#5A6270] mt-2 leading-snug">Train multi-joint presses, rows, and leg presses while fresh before single-joint curls or extensions.</p>
+        </div>
+
+        <!-- Rule 3: Inter-Set Rest -->
+        <div class="bg-white border border-[#E2E5EB] rounded-2xl flex flex-col justify-between" style="padding: clamp(12px, 1.8vh, 18px) clamp(14px, 1.6vw, 20px);">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="text-xs font-bold uppercase tracking-wider text-[#E62B1E] mb-1">Rule 03 • Rest 2 to 3 Minutes</div>
+              <h3 class="text-[18px] font-bold text-[#1E2229] leading-snug">Full rest protects set quality</h3>
+            </div>
+            <!-- Mini Battery Recharge SVG -->
+            <svg width="64" height="40" viewBox="0 0 72 52" class="shrink-0">
+              <rect x="10" y="14" width="48" height="24" rx="5" fill="none" stroke="#1E2229" stroke-width="2.5" />
+              <rect x="58" y="21" width="4" height="10" rx="1.5" fill="#1E2229" />
+              <rect x="14" y="18" width="40" height="16" rx="2.5" fill="#E62B1E" />
+            </svg>
+          </div>
+          <p class="text-[15px] text-[#5A6270] mt-2 leading-snug">Taking 2 to 3 minutes between hard sets restores energy so your next set stays strong.</p>
+        </div>
+
+        <!-- Rule 4: Soreness != Growth -->
+        <div class="bg-white border border-[#E2E5EB] rounded-2xl flex flex-col justify-between" style="padding: clamp(12px, 1.8vh, 18px) clamp(14px, 1.6vw, 20px);">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="text-xs font-bold uppercase tracking-wider text-[#E62B1E] mb-1">Rule 04 • Soreness Is Not Progress</div>
+              <h3 class="text-[18px] font-bold text-[#1E2229] leading-snug">DOMS measures novelty, not growth</h3>
+            </div>
+            <!-- Mini Checkmark Badge SVG -->
+            <svg width="56" height="40" viewBox="0 0 72 52" class="shrink-0">
+              <circle cx="36" cy="26" r="19" fill="#FFF5F5" stroke="#E62B1E" stroke-width="2.5" />
+              <path d="M27 26L33 32L45 20" fill="none" stroke="#E62B1E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <p class="text-[15px] text-[#5A6270] mt-2 leading-snug">Soreness reflects an unfamiliar stimulus, while steady rep progression confirms real adaptation.</p>
+        </div>
+      </div>
+
+      <!-- Journal Citation Snapshot -->
+      <div class="journal-card">
+        <span class="journal-badge">Peer-Reviewed</span>
+        <div class="text-xs sm:text-sm text-[#5A6270] leading-snug">
+          <strong class="text-[#1E2229]">Schoenfeld et al. (2016)</strong> JSCR; <strong class="text-[#1E2229]">Nunes et al. (2020)</strong> Eur J Sport Sci; <strong class="text-[#1E2229]">Nosaka et al. (2002)</strong> Scand J Med Sci Sports.
+        </div>
+      </div>
+      <div class="flex items-center justify-end text-xs font-semibold text-[#1E2229] -mt-2">09 / 11</div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SLIDE 10: CONTENT 9 (INTERACTIVE BEGINNER SPLIT BLUEPRINT)          -->
+    <!-- =================================================================== -->
+    <section class="slide slide-light" data-slide="10">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <div class="slide-eyebrow"><span>09</span><span>Beginner Split Blueprint</span></div>
+          <h2 class="slide-title">PPL + Rest + Upper/Lower: choose from each category.</h2>
+        </div>
+        <span class="text-xs font-bold px-3 py-1.5 rounded-lg bg-[#111215] text-white">Compounds First • 1 to 2 Hard Sets</span>
+      </div>
+
+      <!-- Day Selector Tabs -->
+      <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 mt-4">
+        <button onclick="selectBlueprintDay('push')" id="bp-tab-push" class="bp-tab py-2.5 px-3 rounded-xl text-xs font-bold bg-[#E62B1E] text-white cursor-pointer transition">Day 1: Push</button>
+        <button onclick="selectBlueprintDay('pull')" id="bp-tab-pull" class="bp-tab py-2.5 px-3 rounded-xl text-xs font-bold bg-white border border-[#E2E5EB] text-[#5A6270] hover:text-[#1E2229] cursor-pointer transition">Day 2: Pull</button>
+        <button onclick="selectBlueprintDay('legs')" id="bp-tab-legs" class="bp-tab py-2.5 px-3 rounded-xl text-xs font-bold bg-white border border-[#E2E5EB] text-[#5A6270] hover:text-[#1E2229] cursor-pointer transition">Day 3: Legs</button>
+        <button onclick="selectBlueprintDay('rest')" id="bp-tab-rest" class="bp-tab py-2.5 px-3 rounded-xl text-xs font-bold bg-white border border-[#E2E5EB] text-[#5A6270] hover:text-[#1E2229] cursor-pointer transition">Day 4: Rest</button>
+        <button onclick="selectBlueprintDay('upper')" id="bp-tab-upper" class="bp-tab py-2.5 px-3 rounded-xl text-xs font-bold bg-white border border-[#E2E5EB] text-[#5A6270] hover:text-[#1E2229] cursor-pointer transition">Day 5: Upper</button>
+        <button onclick="selectBlueprintDay('lower')" id="bp-tab-lower" class="bp-tab py-2.5 px-3 rounded-xl text-xs font-bold bg-white border border-[#E2E5EB] text-[#5A6270] hover:text-[#1E2229] cursor-pointer transition">Day 6: Lower</button>
+      </div>
+
+      <!-- Active Day Selection Rules & Category Pool -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 my-auto py-2 items-stretch">
+        <!-- Left: "Choose X from Category Y" Recipe Card -->
+        <div class="lg:col-span-5 bg-[#111215] text-white rounded-2xl p-5 flex flex-col justify-between">
+          <div>
+            <div id="bp-day-badge" class="inline-block text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-[#E62B1E] text-white">
+              Day 1 of 6 • Push Focus
+            </div>
+            <h3 id="bp-day-title" class="text-2xl font-bold text-white mt-2.5">Push Day Rules</h3>
+            <p id="bp-day-summary" class="text-sm text-gray-300 mt-1 leading-relaxed">
+              Start with compound chest and overhead presses while fresh, then finish with side delt and tricep isolations.
+            </p>
+
+            <ul id="bp-rules-list" class="mt-3.5 space-y-2 text-[15px]">
+              <li class="bg-[#1A1C21] border border-[#2B2F38] rounded-xl px-3.5 py-2 flex items-center justify-between gap-2">
+                <span class="font-semibold text-white">1. Chest (Compound): Choose 1–2</span>
+                <span class="text-xs font-bold text-[#E62B1E] shrink-0">1–2 sets</span>
+              </li>
+              <li class="bg-[#1A1C21] border border-[#2B2F38] rounded-xl px-3.5 py-2 flex items-center justify-between gap-2">
+                <span class="font-semibold text-white">2. Shoulders (Compound): Choose 1</span>
+                <span class="text-xs font-bold text-[#E62B1E] shrink-0">1–2 sets</span>
+              </li>
+              <li class="bg-[#1A1C21] border border-[#2B2F38] rounded-xl px-3.5 py-2 flex items-center justify-between gap-2">
+                <span class="font-semibold text-white">3. Side Delts (Isolation): Choose 1</span>
+                <span class="text-xs font-bold text-[#E62B1E] shrink-0">1–2 sets</span>
+              </li>
+              <li class="bg-[#1A1C21] border border-[#2B2F38] rounded-xl px-3.5 py-2 flex items-center justify-between gap-2">
+                <span class="font-semibold text-white">4. Triceps (Isolation): Choose 1</span>
+                <span class="text-xs font-bold text-[#E62B1E] shrink-0">1–2 sets</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="mt-3.5 pt-3 border-t border-gray-800 text-xs text-gray-400 flex justify-between">
+            <span>Total Working Sets:</span>
+            <strong id="bp-total-sets" class="text-white">5–6 Hard Sets Total (~35–45 mins)</strong>
+          </div>
+        </div>
+
+        <!-- Right: Beginner Exercise Options by Category -->
+        <div id="bp-categories-grid" class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div class="bg-white border border-[#E2E5EB] rounded-2xl p-4">
+            <div class="text-xs font-bold uppercase tracking-wider text-[#E62B1E] mb-1.5">Category 1 (Compound): Chest</div>
+            <ul class="space-y-1 text-[15px] text-[#1E2229]">
+              <li>• Inclined Smith Chest Press</li>
+              <li>• Machine Chest Press</li>
+              <li>• Machine or Cable Pec Fly</li>
+            </ul>
+          </div>
+
+          <div class="bg-white border border-[#E2E5EB] rounded-2xl p-4">
+            <div class="text-xs font-bold uppercase tracking-wider text-[#E62B1E] mb-1.5">Category 2 (Compound): Shoulders</div>
+            <ul class="space-y-1 text-[15px] text-[#1E2229]">
+              <li>• Machine Shoulder Press</li>
+              <li>• Seated Dumbbell Overhead Press</li>
+            </ul>
+          </div>
+
+          <div class="bg-white border border-[#E2E5EB] rounded-2xl p-4">
+            <div class="text-xs font-bold uppercase tracking-wider text-[#E62B1E] mb-1.5">Category 3 (Isolation): Side Delts</div>
+            <ul class="space-y-1 text-[15px] text-[#1E2229]">
+              <li>• Cable Lateral Raise</li>
+              <li>• Machine Lateral Raise</li>
+            </ul>
+          </div>
+
+          <div class="bg-white border border-[#E2E5EB] rounded-2xl p-4">
+            <div class="text-xs font-bold uppercase tracking-wider text-[#E62B1E] mb-1.5">Category 4 (Isolation): Triceps</div>
+            <ul class="space-y-1 text-[15px] text-[#1E2229]">
+              <li>• Overhead Cable Tricep Extension</li>
+              <li>• Cable Tricep Pushdown</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-[#E2E5EB] text-sm text-[#5A6270]">
+        <span>Run multi-joint compounds first within each day, and swap freely inside any category.</span>
+        <span class="font-semibold text-[#1E2229]">10 / 11</span>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SLIDE 11: TAKEAWAY SLIDE (DARK GROUND)                              -->
+    <!-- =================================================================== -->
+    <section class="slide slide-dark" data-slide="11">
+      <div class="flex items-center justify-between">
+        <div class="slide-eyebrow"><span>Takeaway</span><span>Your Day One Blueprint</span></div>
+        <span class="text-xs font-semibold text-gray-500">11 / 11</span>
+      </div>
+
+      <div class="my-auto max-w-4xl">
+        <h2 class="text-4xl sm:text-6xl font-bold text-white tracking-tight leading-[1.1]">
+          Start <span class="text-[#E62B1E]">embarrassingly</span> small.
+        </h2>
+        <p class="mt-5 text-xl sm:text-2xl text-gray-300 font-normal leading-relaxed">
+          Begin right where you are today. Pick <strong class="text-white font-semibold">4 to 6 basic machine movements</strong>, perform <strong class="text-white font-semibold">1 to 2 focused sets</strong> each, and leave with energy in the tank.
+        </p>
+
+        <!-- 3-Step Day One Checklist Card -->
+        <div class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="bg-[#1A1C21] border border-[#2B2F38] rounded-xl p-5">
+            <div class="text-xs font-bold uppercase tracking-wider text-[#E62B1E]">Step 1</div>
+            <div class="text-lg font-bold text-white mt-1">Pick a Simple Split</div>
+            <p class="text-sm text-gray-400 mt-1">Follow PPL + Rest + Upper/Lower, or FBEOD with 1 hard set per muscle.</p>
+          </div>
+          <div class="bg-[#1A1C21] border border-[#2B2F38] rounded-xl p-5">
+            <div class="text-xs font-bold uppercase tracking-wider text-[#E62B1E]">Step 2</div>
+            <div class="text-lg font-bold text-white mt-1">1 to 2 Hard Sets</div>
+            <p class="text-sm text-gray-400 mt-1">Control the stretch and stop with 1 to 2 clean reps in reserve.</p>
+          </div>
+          <div class="bg-[#1A1C21] border border-[#2B2F38] rounded-xl p-5">
+            <div class="text-xs font-bold uppercase tracking-wider text-[#E62B1E]">Step 3</div>
+            <div class="text-lg font-bold text-white mt-1">+1 Rep Next Week</div>
+            <p class="text-sm text-gray-400 mt-1">Steady weekly consistency builds lasting strength.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-6 border-t border-gray-800 flex flex-wrap items-center justify-between gap-4">
+        <p class="text-base sm:text-lg font-semibold text-white">
+          “Show up, practice the 6 patterns, and earn one extra rep.”
+        </p>
+        <button onclick="goToSlide(1)" class="px-4 py-2 rounded-lg bg-[#22252D] hover:bg-[#E62B1E] text-white text-xs font-semibold transition cursor-pointer">
+          ↺ Replay Talk
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- BOTTOM PRESENTATION CONTROL DOCK                                      -->
+  <!-- ===================================================================== -->
+  <footer class="control-dock">
+    <div class="flex items-center gap-3">
+      <span class="w-2.5 h-2.5 rounded-full bg-[#E62B1E]"></span>
+      <span class="text-xs font-bold tracking-wider uppercase text-gray-300 hidden sm:inline">The Gym, Decoded</span>
+      <span id="slide-counter" class="text-xs font-semibold text-gray-400 ml-1">01 / 11</span>
+    </div>
+
+    <!-- Slide Dots -->
+    <div id="dots-container" class="flex items-center gap-2"></div>
+
+    <!-- Navigation Controls -->
+    <div class="flex items-center gap-2">
+      <button onclick="prevSlide()" id="prev-btn" class="nav-btn" title="Previous Slide (Left Arrow)">
+        <span>← Prev</span>
+      </button>
+      <button onclick="nextSlide()" id="next-btn" class="nav-btn" title="Next Slide (Right Arrow / Space)">
+        <span>Next →</span>
+      </button>
+    </div>
+  </footer>
+
+  <!-- ===================================================================== -->
+  <!-- PRESENTATION LOGIC & INTERACTIVE DIAGRAMS                             -->
+  <!-- ===================================================================== -->
+  <script>
+    const totalSlides = 11;
+    let currentSlide = 1;
+
+    // Interactive Day Blueprint data for Slide 10 (PPL + Rest + Upper/Lower)
+    const blueprintDays = {
+      push: {
+        badge: "Day 1 of 6 • Push Focus",
+        title: "Push Day Rules",
+        summary: "Start with compound chest and overhead presses while fresh, then finish with side delt and tricep isolations.",
+        rules: [
+          { pick: "1. Chest (Compound): Choose 1–2", sets: "1–2 sets" },
+          { pick: "2. Shoulders (Compound): Choose 1", sets: "1–2 sets" },
+          { pick: "3. Side Delts (Isolation): Choose 1", sets: "1–2 sets" },
+          { pick: "4. Triceps (Isolation): Choose 1", sets: "1–2 sets" }
+        ],
+        total: "5–6 Hard Sets Total (~35–45 mins)",
+        categories: [
+          {
+            title: "Category 1 (Compound): Chest",
+            items: ["Inclined Smith Chest Press", "Machine Chest Press", "Machine or Cable Pec Fly"]
+          },
+          {
+            title: "Category 2 (Compound): Shoulders",
+            items: ["Machine Shoulder Press", "Seated Dumbbell Overhead Press"]
+          },
+          {
+            title: "Category 3 (Isolation): Side Delts",
+            items: ["Cable Lateral Raise", "Machine Lateral Raise"]
+          },
+          {
+            title: "Category 4 (Isolation): Triceps",
+            items: ["Overhead Cable Tricep Extension", "Cable Tricep Pushdown"]
+          }
+        ]
+      },
+      pull: {
+        badge: "Day 2 of 6 • Pull Focus",
+        title: "Pull Day Rules",
+        summary: "Run multi-joint upper back and lat pulls first, then isolate rear delts and biceps.",
+        rules: [
+          { pick: "1. Choose 1 from Upper Back", sets: "1–2 hard sets" },
+          { pick: "2. Choose 1 from Lats", sets: "1–2 hard sets" },
+          { pick: "3. Choose 1 from Rear Delts", sets: "1–2 hard sets" },
+          { pick: "4. Choose 1 from Biceps", sets: "1–2 hard sets" }
+        ],
+        total: "4 to 8 Hard Sets (~35 min)",
+        categories: [
+          {
+            title: "Category 1: Upper Back",
+            items: ["Wide Chest-Supported Row", "Machine T-Bar Row"]
+          },
+          {
+            title: "Category 2: Lats",
+            items: ["Lat Pulldown", "Neutral-Grip Pull-In"]
+          },
+          {
+            title: "Category 3: Rear Delts",
+            items: ["Reverse Pec Deck", "Cable Rear Delt Fly"]
+          },
+          {
+            title: "Category 4: Biceps",
+            items: ["Cable Bayesian Curl", "Machine Preacher Curl"]
+          }
+        ]
+      },
+      legs: {
+        badge: "Day 3 of 6 • Lower Body Focus",
+        title: "Legs Day Rules",
+        summary: "Start with compound leg presses or squats, then follow with leg curls, extensions, and calves.",
+        rules: [
+          { pick: "1. Choose 2 from Quads / Glutes", sets: "1–2 sets each" },
+          { pick: "2. Choose 1 from Hamstrings", sets: "1–2 hard sets" },
+          { pick: "3. Choose 1 from Calves", sets: "1–2 hard sets" }
+        ],
+        total: "4 to 8 Hard Sets (~40 min)",
+        categories: [
+          {
+            title: "Category 1: Quads / Glutes",
+            items: ["Leg Press Machine", "Hack Squat or Goblet Squat", "Leg Extension Machine"]
+          },
+          {
+            title: "Category 2: Hamstrings",
+            items: ["Seated Leg Curl Machine", "Lying Leg Curl Machine"]
+          },
+          {
+            title: "Category 3: Calves",
+            items: ["Standing Calf Raise Machine", "Seated Calf Raise Machine"]
+          }
+        ]
+      },
+      rest: {
+        badge: "Day 4 of 6 • Recovery Day",
+        title: "Rest & Reset Day",
+        summary: "No lifting required. Lets muscles repair and central nervous system fatigue clear.",
+        rules: [
+          { pick: "Choose 0 from Gym Machines", sets: "Full recovery" },
+          { pick: "Optional: Easy 20 to 30 min walk", sets: "Low effort" },
+          { pick: "Prioritize 7 to 9 hours sleep", sets: "Tissue repair" }
+        ],
+        total: "0 Hard Sets • Active Recovery",
+        categories: [
+          {
+            title: "Category: Low-Stress Movement",
+            items: ["Easy outdoor walk", "Light mobility or stretching", "Errands at a relaxed pace"]
+          },
+          {
+            title: "Category: Recovery Habits",
+            items: ["Adequate protein intake", "Good hydration", "Consistent bedtime"]
+          }
+        ]
+      },
+      upper: {
+        badge: "Day 5 of 6 • Upper Body Mix",
+        title: "Upper Day Rules",
+        summary: "Mirrors Push and Pull categories in one compact session, starting with chest and back compounds.",
+        rules: [
+          { pick: "1. Chest & Shoulders: 1 Chest + 1 Side Delt", sets: "1–2 sets each" },
+          { pick: "2. Back: 1 Upper Back or 1 Lat move", sets: "1–2 sets each" },
+          { pick: "3. Arms & Rear Delts: 1 Bicep + 1 Tricep/Rear Delt", sets: "1 hard set each" }
+        ],
+        total: "5 to 8 Hard Sets (~35 min)",
+        categories: [
+          {
+            title: "Chest & Side Delts",
+            items: ["Chest: Incline Smith or Machine Press", "Side Delts: Cable or Machine Lateral Raise"]
+          },
+          {
+            title: "Upper Back & Lats",
+            items: ["Upper Back: Wide Chest-Supported Row", "Lats: Lat Pulldown or Neutral Pull-In"]
+          },
+          {
+            title: "Arms & Rear Delts",
+            items: ["Biceps: Cable Bayesian or Preacher Curl", "Triceps / Rear Delts: Pushdown or Reverse Pec Deck"]
+          }
+        ]
+      },
+      lower: {
+        badge: "Day 6 of 6 • Lower Body Mix",
+        title: "Lower Day Rules",
+        summary: "Pairs a quad/glute compound first with a hamstring curl and optional calves or core.",
+        rules: [
+          { pick: "1. Choose 1 from Quads / Glutes", sets: "1–2 hard sets" },
+          { pick: "2. Choose 1 from Hamstrings", sets: "1–2 hard sets" },
+          { pick: "3. Optional: 1 from Calves or Core", sets: "1–2 hard sets" }
+        ],
+        total: "2 to 6 Hard Sets (~25–30 min)",
+        categories: [
+          {
+            title: "Category 1: Quads / Glutes",
+            items: ["Leg Press Machine", "Leg Extension Machine", "Glute Bridge Machine"]
+          },
+          {
+            title: "Category 2: Hamstrings",
+            items: ["Seated Leg Curl Machine", "Lying Leg Curl Machine"]
+          },
+          {
+            title: "Category 3: Optional Calves / Core",
+            items: ["Seated Calf Raise", "Cable Crunch or Plank"]
+          }
+        ]
+      }
+    };
+
+    function selectBlueprintDay(dayKey) {
+      const data = blueprintDays[dayKey];
+      if (!data) return;
+
+      document.querySelectorAll(".bp-tab").forEach((btn) => {
+        const active = btn.id === `bp-tab-${dayKey}`;
+        btn.className = active
+          ? "bp-tab py-2.5 px-3 rounded-xl text-xs font-bold bg-[#E62B1E] text-white cursor-pointer transition"
+          : "bp-tab py-2.5 px-3 rounded-xl text-xs font-bold bg-white border border-[#E2E5EB] text-[#5A6270] hover:text-[#1E2229] cursor-pointer transition";
+      });
+
+      document.getElementById("bp-day-badge").textContent = data.badge;
+      document.getElementById("bp-day-title").textContent = data.title;
+      document.getElementById("bp-day-summary").textContent = data.summary;
+      document.getElementById("bp-total-sets").textContent = data.total;
+
+      const rulesList = document.getElementById("bp-rules-list");
+      rulesList.innerHTML = data.rules.map((r) => `
+        <li class="bg-[#1A1C21] border border-[#2B2F38] rounded-xl px-3.5 py-2 flex items-center justify-between gap-2">
+          <span class="font-semibold text-white">${r.pick}</span>
+          <span class="text-xs font-bold text-[#E62B1E] shrink-0">${r.sets}</span>
+        </li>
+      `).join("");
+
+      const grid = document.getElementById("bp-categories-grid");
+      grid.innerHTML = data.categories.map((cat, idx) => {
+        const spanClass = (data.categories.length === 3 && idx === 2) ? "sm:col-span-2" : "";
+        const noteHtml = cat.note ? `<p class="text-xs text-[#5A6270] mt-1.5 leading-snug">${cat.note}</p>` : "";
+        return `
+          <div class="bg-white border border-[#E2E5EB] rounded-2xl p-4 ${spanClass}">
+            <div class="text-xs font-bold uppercase tracking-wider text-[#E62B1E] mb-1.5">${cat.title}</div>
+            <ul class="space-y-1 text-[15px] text-[#1E2229]">
+              ${cat.items.map((item) => `<li>• ${item}</li>`).join("")}
+            </ul>
+            ${noteHtml}
+          </div>
+        `;
+      }).join("");
+    }
+
+    // Anatomical muscle data for Slide 6
+    const muscleData = {
+      chest: {
+        region: "Upper Body • Anterior",
+        title: "Chest (Pectorals)",
+        job: "Powers horizontal pushing movements, such as pushing open a heavy door or pushing yourself up off the floor.",
+        pattern: "Horizontal Push",
+        exercise: "Seated Chest Press Machine"
+      },
+      back: {
+        region: "Upper Body • Posterior",
+        title: "Back & Lats",
+        job: "Pulls objects toward your torso, supports upright posture, and protects your shoulders during daily lifting.",
+        pattern: "Horizontal & Vertical Pull",
+        exercise: "Seated Cable Row / Lat Pulldown"
+      },
+      shoulders: {
+        region: "Upper Body • Deltoids",
+        title: "Shoulders (Deltoids)",
+        job: "Lifts objects overhead and stabilizes the shoulder joint through every pressing and pulling motion.",
+        pattern: "Vertical Push / Raise",
+        exercise: "Machine Shoulder Press"
+      },
+      arms: {
+        region: "Upper Body • Biceps & Triceps",
+        title: "Arms (Biceps & Triceps)",
+        job: "Biceps bend the elbow during pulls and triceps straighten the elbow during pushes, assisting on all upper-body compound moves.",
+        pattern: "Push & Pull Assist",
+        exercise: "Cable Pushdown & Curl"
+      },
+      core: {
+        region: "Trunk • Anterior & Deep",
+        title: "Core (Abs & Obliques)",
+        job: "Resists twisting and collapsing under load, transferring force safely between your lower and upper body.",
+        pattern: "Carry / Anti-Rotation Brace",
+        exercise: "Farmer’s Carry or Plank"
+      },
+      quads: {
+        region: "Lower Body • Anterior",
+        title: "Quads (Front Thigh)",
+        job: "Straightens the knee, powering every step up a staircase, standing from a chair, and squatting.",
+        pattern: "Squat / Knee Extension",
+        exercise: "Leg Press Machine"
+      },
+      glutes: {
+        region: "Lower Body • Posterior",
+        title: "Glutes (Hip Extensors)",
+        job: "Acts as the body’s largest power engine, driving hip extension, protecting your lower back, and powering walking and climbing.",
+        pattern: "Squat, Hinge & Lunge",
+        exercise: "Leg Press or Glute Bridge"
+      },
+      hamstrings: {
+        region: "Lower Body • Posterior",
+        title: "Hamstrings (Back Thigh)",
+        job: "Bends the knee and helps hinge the hips forward when picking up objects from the floor.",
+        pattern: "Hip Hinge & Knee Flexion",
+        exercise: "Seated Leg Curl Machine"
+      },
+      calves: {
+        region: "Lower Body • Posterior",
+        title: "Calves (Gastrocnemius & Soleus)",
+        job: "Propels your ankle with every stride, jump, and uphill walk.",
+        pattern: "Ankle Plantarflexion",
+        exercise: "Standing or Seated Calf Raise"
+      }
+    };
+
+    // Initialize navigation dots and first slide
+    function initPresentation() {
+      const dotsContainer = document.getElementById("dots-container");
+      for (let i = 1; i <= totalSlides; i++) {
+        const dot = document.createElement("button");
+        dot.className = "dot-indicator" + (i === 1 ? " active" : "");
+        dot.setAttribute("aria-label", `Go to slide ${i}`);
+        dot.onclick = () => goToSlide(i);
+        dotsContainer.appendChild(dot);
+      }
+      updateUI();
+    }
+
+    function goToSlide(n) {
+      if (n < 1 || n > totalSlides) return;
+      currentSlide = n;
+      updateUI();
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+        updateUI();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        currentSlide--;
+        updateUI();
+      }
+    }
+
+    function updateUI() {
+      // Toggle active slide
+      document.querySelectorAll(".slide").forEach((slide) => {
+        const slideNum = parseInt(slide.getAttribute("data-slide"), 10);
+        slide.classList.toggle("active", slideNum === currentSlide);
+      });
+
+      // Update dots
+      const dots = document.querySelectorAll(".dot-indicator");
+      dots.forEach((dot, idx) => {
+        dot.classList.toggle("active", idx + 1 === currentSlide);
+      });
+
+      // Update counter & button states
+      document.getElementById("slide-counter").textContent =
+        `${String(currentSlide).padStart(2, "0")} / ${String(totalSlides).padStart(2, "0")}`;
+      document.getElementById("prev-btn").disabled = currentSlide === 1;
+      document.getElementById("next-btn").disabled = currentSlide === totalSlides;
+    }
+
+    // Slide 3 interactive ROM toggle
+    function setRomMode(mode) {
+      const fullBtn = document.getElementById("rom-full-btn");
+      const shortBtn = document.getElementById("rom-short-btn");
+      const curve = document.getElementById("rom-curve");
+      const zone = document.getElementById("rom-zone");
+      const label = document.getElementById("rom-label");
+      const caption = document.getElementById("rom-caption");
+
+      if (mode === "full") {
+        fullBtn.className = "px-3 py-1 rounded-md bg-[#E62B1E] text-white transition cursor-pointer";
+        shortBtn.className = "px-3 py-1 rounded-md text-[#5A6270] hover:text-[#1E2229] transition cursor-pointer";
+        curve.setAttribute("d", "M 30 92 Q 210 10 390 92");
+        curve.setAttribute("stroke", "#E62B1E");
+        zone.setAttribute("x", "30");
+        zone.setAttribute("width", "360");
+        zone.setAttribute("fill", "#E62B1E");
+        label.textContent = "Peak Growth Signal: Loaded in the Stretched Position";
+        caption.textContent = "Control the lowering phase into a comfortable stretch. Muscles respond strongly when loaded at longer lengths.";
+      } else {
+        shortBtn.className = "px-3 py-1 rounded-md bg-[#1E2229] text-white transition cursor-pointer";
+        fullBtn.className = "px-3 py-1 rounded-md text-[#5A6270] hover:text-[#1E2229] transition cursor-pointer";
+        curve.setAttribute("d", "M 230 92 Q 310 52 390 92");
+        curve.setAttribute("stroke", "#5A6270");
+        zone.setAttribute("x", "230");
+        zone.setAttribute("width", "160");
+        zone.setAttribute("fill", "#5A6270");
+        label.textContent = "Reduced Stimulus: Skipping the Deep Stretch";
+        caption.textContent = "Stopping reps near the top misses the high-tension stretched range where muscles adapt best.";
+      }
+    }
+
+    // Slide 4 interactive RIR slider
+    function updateRirGauge(val) {
+      const rir = parseInt(val, 10);
+      const badge = document.getElementById("rir-badge");
+      const valText = document.getElementById("rir-value-text");
+      const stimText = document.getElementById("rir-stimulus-pct");
+      const desc = document.getElementById("rir-desc");
+
+      if (rir === 0) {
+        badge.textContent = "0 RIR • Muscular Failure";
+        badge.style.background = "#1E2229";
+        valText.textContent = "0 Reps Left (Failure)";
+        stimText.textContent = "100% Stimulus • High Fatigue";
+        desc.textContent = "Delivers maximum stimulus while creating higher fatigue; best saved for stable machine exercises.";
+      } else if (rir <= 2) {
+        badge.textContent = `${rir} RIR • Sweet Spot`;
+        badge.style.background = "#E62B1E";
+        valText.textContent = `${rir} ${rir === 1 ? "Rep" : "Reps"} Left in Tank`;
+        stimText.textContent = rir === 1 ? "~95% Growth Stimulus" : "~90% Growth Stimulus";
+        desc.textContent = "The final 1 to 2 reps slow down noticeably despite full effort, giving high muscle stimulus with manageable fatigue.";
+      } else {
+        badge.textContent = `${rir} RIR • Warm-Up Zone`;
+        badge.style.background = "#5A6270";
+        valText.textContent = `${rir} Reps Left in Tank`;
+        stimText.textContent = "~45% Growth Stimulus";
+        desc.textContent = "Feels comfortable and works well for warm-up sets or light practice.";
+      }
+    }
+
+    // Slide 4 interactive RIR slider
+    function updateRirGauge(val) {
+      const rir = parseInt(val, 10);
+      const badge = document.getElementById("rir-badge");
+      const valText = document.getElementById("rir-value-text");
+      const stimText = document.getElementById("rir-stimulus-pct");
+      const desc = document.getElementById("rir-desc");
+
+      if (rir === 0) {
+        badge.textContent = "0 RIR • Muscular Failure";
+        badge.style.background = "#1E2229";
+        valText.textContent = "0 Reps Left (Failure)";
+        stimText.textContent = "100% Stimulus • High Fatigue";
+        desc.textContent = "Maximum effort, but generates steep fatigue—use sparingly on safe machine exercises.";
+      } else if (rir <= 2) {
+        badge.textContent = `${rir} RIR • Sweet Spot`;
+        badge.style.background = "#E62B1E";
+        valText.textContent = `${rir} ${rir === 1 ? "Rep" : "Reps"} Left in Tank`;
+        stimText.textContent = rir === 1 ? "~95% Growth Stimulus" : "~90% Growth Stimulus";
+        desc.textContent = "The last 1–2 reps noticeably slow down despite full effort. Maximum muscle growth with clean form and low fatigue.";
+      } else {
+        badge.textContent = `${rir} RIR • Warm-Up Zone`;
+        badge.style.background = "#5A6270";
+        valText.textContent = `${rir} Reps Left in Tank`;
+        stimText.textContent = "~45% Growth Stimulus";
+        desc.textContent = "Feels comfortable—great for warm-up sets or active recovery, but too easy to signal new muscle growth.";
+      }
+    }
+
+    // Slide 6 interactive muscle selector
+    function selectMuscle(key) {
+      const info = muscleData[key];
+      if (!info) return;
+
+      // Update SVG zones
+      document.querySelectorAll(".muscle-zone").forEach((el) => {
+        el.classList.toggle("selected", el.getAttribute("data-muscle") === key);
+      });
+
+      // Update selector pills
+      document.querySelectorAll(".muscle-pill").forEach((pill) => {
+        const isMatch = pill.getAttribute("data-pill") === key;
+        pill.className = isMatch
+          ? "muscle-pill px-2.5 py-1 rounded-md text-xs font-semibold bg-[#E62B1E] text-white cursor-pointer"
+          : "muscle-pill px-2.5 py-1 rounded-md text-xs font-semibold bg-[#F1F3F6] text-[#5A6270] cursor-pointer";
+      });
+
+      // Update right detail card
+      document.getElementById("muscle-region-tag").textContent = info.region;
+      document.getElementById("muscle-title").textContent = info.title;
+      document.getElementById("muscle-job").textContent = info.job;
+      document.getElementById("muscle-pattern").textContent = info.pattern;
+      document.getElementById("muscle-exercise").textContent = info.exercise;
+    }
+
+    // Keyboard navigation
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+        e.preventDefault();
+        prevSlide();
+      }
+    });
+
+    // Touch swipe support for mobile/tablet
+    let touchStartX = 0;
+    document.addEventListener("touchstart", (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    document.addEventListener("touchend", (e) => {
+      const diff = touchStartX - e.changedTouches[0].screenX;
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) nextSlide();
+        else prevSlide();
+      }
+    }, { passive: true });
+
+    initPresentation();
+  </script>
+</body>
+</html>
